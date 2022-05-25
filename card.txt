@@ -1,0 +1,8 @@
+const instance = await Faucet.deployed();
+instance.addFunds({from:accounts[0], to:"0x9aBA8E05E5Dd299d2704323877c94532291a69e7", value: "2000000000000000000"})
+web3.eth.sendTransaction({from: accounts[0], to: "0x1cA7cF801440FfCEe0e6A98557CfDCE6A7ce0784", data: ""})
+
+instance.getFunderAtIndex(0)
+instance.getAllFunders()
+instance.withdraw("500000000000000000",{from: "0x26E261C65332A454476B1267cc27cc3a8Df4A8D9"})
+instance.test2({from:accounts[0]})
