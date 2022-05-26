@@ -6,3 +6,5 @@ instance.getFunderAtIndex(0)
 instance.getAllFunders()
 instance.withdraw("500000000000000000",{from: "0x26E261C65332A454476B1267cc27cc3a8Df4A8D9"})
 instance.test2({from:accounts[0]})
+
+piano rabbit follow report disagree prize imitate stone razor popular trumpet stock

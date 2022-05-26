@@ -7,31 +7,42 @@ function App() {
   const [web3Api, setWeb3Api] = useState({
     provider: null,
     web3: null,
+
     contrat: null
   });
   const [account, setAccount] = useState(null);
+  const [isProviderLoaded, setProviderLoaded] = useState(false);
   const [balance, setBalance] = useState(null);
   const [shouldReload, reload] = useState(false);
+
+  const canConnectToContract = account && web3Api.contract;
 
   const reloadEffect = useCallback(() => reload(!shouldReload), [shouldReload]);
 
   const setAccountListener = (provider) => {
-    provider.on('accountsChanged', (accounts) => setAccount(accounts[0]));
+    // provider.on('accountsChanged', (accounts) => setAccount(accounts[0]));
+    provider.on('accountsChanged', (_) => window.location.reload());
+    provider.on('chainChanged', (_) => window.location.reload());
   };
 
   useEffect(() => {
     const loadProvider = async () => {
       const provider = await detectEthereumProvider();
-      const contract = await loadContrat('Faucet', provider);
 
       if (provider) {
+        const contract = await loadContrat('Faucet', provider);
         setAccountListener(provider);
         setWeb3Api({
           web3: new Web3(provider),
           provider,
           contract
         });
+        setProviderLoaded(true);
       } else {
+        setWeb3Api({
+          ...web3Api
+        });
+        setProviderLoaded(true);
         console.error('Please, install Metamask.');
       }
     };
@@ -79,31 +90,54 @@ function App() {
     <>
       <div className='faucet-wrapper'>
         <div className='faucet'>
-          <div className='is-flex is-align-items-center'>
-            <span>
-              <strong className='mr-2'>Account: </strong>
-            </span>
-            {account ? (
-              <div>{account}</div>
-            ) : (
-              <button
-                className='button is-small'
-                onClick={() =>
-                  web3Api.provider.request({ method: 'eth_requestAccounts' })
-                }
-              >
-                Connect Wallet
-              </button>
-            )}
-          </div>
-          <div className='balance-view is)-size-2 my-4'>
+          {isProviderLoaded ? (
+            <div className='is-flex is-align-items-center'>
+              <span>
+                <strong className='mr-2'>Account: </strong>
+              </span>
+              {account ? (
+                <div>{account}</div>
+              ) : !web3Api.provider ? (
+                <>
+                  <div className='notification is-warning is-size-6 is-rounded'>
+                    Wallet is not detected!{` `}
+                    <a target='_blank' href='https://docs.metamask.io'>
+                      Install Metamask
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <button
+                  className='button is-small'
+                  onClick={() =>
+                    web3Api.provider.request({ method: 'eth_requestAccounts' })
+                  }
+                >
+                  Connect Wallet
+                </button>
+              )}
+            </div>
+          ) : (
+            <span>Looking for Web3...</span>
+          )}
+          <div className='balance-view is-size-2 my-4'>
             Current Balance: <strong>{balance}</strong> ETH
           </div>
-
-          <button className='button is-link mr-2' onClick={addFunds}>
-            Donate 1 ETH
+          {!canConnectToContract && (
+            <i className='is-block'>Connect to Ganache</i>
+          )}
+          <button
+            disabled={!canConnectToContract}
+            onClick={addFunds}
+            className='button is-link mr-2'
+          >
+            Donate 1eth
           </button>
-          <button className='button is-primary' onClick={withDraw}>
+          <button
+            disabled={!canConnectToContract}
+            onClick={withDraw}
+            className='button is-primary'
+          >
             Withdraw
           </button>
         </div>
